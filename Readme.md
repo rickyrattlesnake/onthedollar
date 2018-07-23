@@ -61,4 +61,6 @@ $54,232 plus 45c for each $1 over $180,000
 Todo
 [] cors
 [] https ?
+[] header - HMAC hash
 []
+[] add swagger api
