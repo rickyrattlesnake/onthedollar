@@ -10,6 +10,10 @@ const {
   isValidUser,
 } = require('./authentication/authenticate');
 
+const {
+  cors,
+} = require('./lib/util.cors');
+
 const app = express();
 
 app.use(morgan('dev'));
@@ -19,6 +23,9 @@ app.use((req, res, next) => {
   res.set('Content-Type', stdHeaders.contentType);
   return next();
 });
+
+// cors
+app.use(cors);
 
 
 app.get('/auth/token', (req, res) => {
@@ -52,6 +59,13 @@ app.get('/auth/token', (req, res) => {
       token,
     });
 });
+
+
+app.post('/income', (req, res) => {
+
+  res.status(200);
+});
+
 
 app.listen(PORT, () => {
   console.log(`[v] connected on port ${PORT}`);
