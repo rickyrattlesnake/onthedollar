@@ -2,6 +2,8 @@ const express = require('express');
 const morgan = require('morgan');
 const errorResponse = require('./lib/util.error-response');
 const stdHeaders = require('./lib/util.std-headers');
+const profileStore = require('./income-profile/accessor');
+const profileValidator = require('./income-profile/validator');
 
 const PORT = process.env.PORT || 3000;
 
@@ -28,6 +30,9 @@ app.use((req, res, next) => {
 
 // cors
 app.use(cors);
+
+// parser middleware
+app.use(express.json());
 
 
 app.get('/auth/token', (req, res) => {
@@ -63,11 +68,68 @@ app.get('/auth/token', (req, res) => {
 });
 
 
-app.post('/income', (req, res) => {
+app.post('/profile/income', (req, res) => {
+  const userId = '123';
 
-  res.status(200);
+  const {
+    profileName,
+    superannuationPercentage,
+    incomeAmount,
+    incomeIncludesSuper,
+    taxRatesYear
+  } = req.body;
+
+  const validation = profileValidator.validate({
+    profileName,
+    superannuationPercentage,
+    incomeAmount,
+    incomeIncludesSuper,
+    taxRatesYear
+  });
+
+  if (validation.valid === false) {
+    const error = errorResponse.getBadRequest(validation.message);
+
+    return res.status(error.statusCode)
+      .send(error);
+  }
+
+  const profileId = profileStore.createProfile(userId, {
+    profileName,
+    superannuationPercentage,
+    incomeAmount,
+    incomeIncludesSuper,
+    taxRatesYear
+  })
+
+
+  return res.status(200)
+    .send({
+      profileId
+    });
 });
 
+app.get('/profile/income/:id', (req, res) => {
+  const userId = '123';
+  const profileId = req.params.id;
+
+  const profile = profileStore.getProfileById(userId, profileId);
+
+  if (profile == null) {
+    const error = errorResponse.getNotFound('profile not found');
+    return res.status(error.statusCode)
+      .send(error);
+  }
+
+  return res.status(200)
+    .send({
+      profileName: profile.profileName,
+      superannuationPercentage: profile.superannuationPercentage,
+      incomeAmount: profile.incomeAmount,
+      incomeIncludesSuper: profile.incomeIncludesSuper,
+      taxRatesYear: profile.taxRatesYear
+    });
+});
 
 app.listen(PORT, () => {
   console.log(`[v] connected on port ${PORT}`);
