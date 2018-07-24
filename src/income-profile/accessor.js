@@ -1,4 +1,12 @@
 const uuidv4 = require('uuid/v4');
+const MongoClient = require('mongodb').MongoClient;
+
+const dbName = 'taxTracker';
+const profileCollectionName = 'profiles';
+
+const connectionUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const connection = MongoClient.connect(connectionUrl);
+
 
 const profileStore = new Map();
 
@@ -9,7 +17,7 @@ module.exports = {
   getProfilesByUser,
 };
 
-function createProfile(userId, {
+async function createProfile(userId, {
       profileName,
       superannuationPercentage,
       incomeAmount,
@@ -19,8 +27,11 @@ function createProfile(userId, {
 
   const profileId = uuidv4();
 
-  const currentProfiles = getProfilesByUser(userId);
-  currentProfiles.push({
+
+  const activeConnection = await connection;
+  const db = activeConnection.db(dbName);
+  const collection = await db.createCollection(profileCollectionName);
+  await collection.insertOne({
     profileId,
     profileName,
     superannuationPercentage,
@@ -28,8 +39,6 @@ function createProfile(userId, {
     incomeIncludesSuper,
     taxRatesYear
   });
-
-  profileStore.set(String(userId), currentProfiles);
 
   return profileId;
 }
@@ -49,9 +58,13 @@ function getProfilesByUser(userId) {
   return profileStore.get(String(userId)) || [];
 }
 
-function getProfileById(userId, profileId) {
-  const profiles = getProfilesByUser(userId);
-  const profile = profiles.filter(profile => profile.profileId === profileId)[0];
+async function getProfileById(userId, profileId) {
+  const activeConnection = await connection;
+  const db = activeConnection.db(dbName);
+  const collection = await db.createCollection(profileCollectionName);
+  const profile = await collection.findOne({
+    profileId
+  });
 
   return profile == null ? null : profile;
 }

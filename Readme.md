@@ -64,3 +64,4 @@ Todo
 [] header - HMAC hash
 []
 [] add swagger api
+[] mongodb error handling

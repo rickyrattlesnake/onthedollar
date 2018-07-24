@@ -68,7 +68,7 @@ app.get('/auth/token', (req, res) => {
 });
 
 
-app.post('/profile/income', (req, res) => {
+app.post('/profile/income', async (req, res) => {
   const userId = '123';
 
   const {
@@ -94,7 +94,7 @@ app.post('/profile/income', (req, res) => {
       .send(error);
   }
 
-  const profileId = profileStore.createProfile(userId, {
+  const profileId = await profileStore.createProfile(userId, {
     profileName,
     superannuationPercentage,
     incomeAmount,
@@ -102,18 +102,17 @@ app.post('/profile/income', (req, res) => {
     taxRatesYear
   })
 
-
   return res.status(200)
     .send({
       profileId
     });
 });
 
-app.get('/profile/income/:id', (req, res) => {
+app.get('/profile/income/:id', async (req, res) => {
   const userId = '123';
   const profileId = req.params.id;
 
-  const profile = profileStore.getProfileById(userId, profileId);
+  const profile = await profileStore.getProfileById(userId, profileId);
 
   if (profile == null) {
     const error = errorResponse.getNotFound('profile not found');
