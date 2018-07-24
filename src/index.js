@@ -5,6 +5,8 @@ const stdHeaders = require('./lib/util.std-headers');
 
 const PORT = process.env.PORT || 3000;
 
+console.log('[-] environment :: PORT=', PORT);
+
 const {
   generateSessionToken,
   isValidUser,
