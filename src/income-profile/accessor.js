@@ -7,6 +7,7 @@ const profileCollectionName = 'profiles';
 const connectionUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const connection = MongoClient.connect(connectionUrl);
 
+console.log('[-] accessor.js :: connectionUrl=', connectionUrl);
 
 const profileStore = new Map();
 
