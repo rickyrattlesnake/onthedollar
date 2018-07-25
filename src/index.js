@@ -68,7 +68,7 @@ app.get('/auth/token', (req, res) => {
 });
 
 
-app.post('/profile/income', async (req, res) => {
+app.post('/profiles/income', async (req, res) => {
   const userId = '123';
 
   const {
@@ -94,7 +94,8 @@ app.post('/profile/income', async (req, res) => {
       .send(error);
   }
 
-  const profileId = await profileStore.createProfile(userId, {
+  const profileId = await profileStore.createProfile({
+    userId,
     profileName,
     superannuationPercentage,
     incomeAmount,
@@ -108,8 +109,9 @@ app.post('/profile/income', async (req, res) => {
     });
 });
 
-app.get('/profile/income/:id', async (req, res) => {
+app.get('/profiles/income/:id', async (req, res) => {
   const userId = '123';
+
   const profileId = req.params.id;
 
   const profile = await profileStore.getProfileById(userId, profileId);
@@ -128,6 +130,44 @@ app.get('/profile/income/:id', async (req, res) => {
       incomeIncludesSuper: profile.incomeIncludesSuper,
       taxRatesYear: profile.taxRatesYear
     });
+});
+
+app.get('/profiles/income', async (req, res) => {
+  const userId = '123';
+
+  const profiles = await profileStore.getProfilesByUser(userId);
+
+  const trimmedProfiles = profiles.map(p => ({
+    profileName: p.profileName,
+    superannuationPercentage: p.superannuationPercentage,
+    incomeAmount: p.incomeAmount,
+    incomeIncludesSuper: p.incomeIncludesSuper,
+    taxRatesYear: p.taxRatesYear
+  }));
+
+  if (profiles.length === 0) {
+    const error = errorResponse.getNotFound('profiles not found');
+    return res.status(error.statusCode)
+      .send(error);
+  }
+
+  return res.status(200)
+    .send(trimmedProfiles);
+});
+
+app.delete('/profiles/income/:id', async (req, res) => {
+  const userId = '123';
+
+  const profileId = req.params.id;
+
+  try {
+    await profileStore.deleteProfile(userId, profileId);
+  } catch (error) {
+    const apiError = errorResponse.getInternalServerError();
+    return res.status(apiError.statusCode).send(apiError);
+  }
+
+  return res.status(200).send({});
 });
 
 app.listen(PORT, () => {

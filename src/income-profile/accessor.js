@@ -1,15 +1,28 @@
 const uuidv4 = require('uuid/v4');
 const MongoClient = require('mongodb').MongoClient;
+const MongoLogger = require('mongodb').Logger;
+MongoLogger.setLevel('info');
 
+const mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const dbName = 'taxTracker';
 const profileCollectionName = 'profiles';
 
-const connectionUrl = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const connection = MongoClient.connect(connectionUrl);
+let profileCollection;
+const initialized = (async function() {
 
-console.log('[-] accessor.js :: connectionUrl=', connectionUrl);
+  const connectionUrl = `${mongodbUri}/${dbName}`;
+  console.log('[-] accessor.js :: connectionUrl =', connectionUrl);
 
-const profileStore = new Map();
+  let client;
+  try {
+    client = await MongoClient.connect(connectionUrl, { useNewUrlParser: true });
+    profileCollection = await client.db(dbName).createCollection(profileCollectionName);
+    console.log('[v] accessor.js :: connection success');
+  } catch (err) {
+    console.error(err);
+  }
+})();
+
 
 module.exports = {
   createProfile,
@@ -18,7 +31,8 @@ module.exports = {
   getProfilesByUser,
 };
 
-async function createProfile(userId, {
+async function createProfile({
+      userId,
       profileName,
       superannuationPercentage,
       incomeAmount,
@@ -28,12 +42,10 @@ async function createProfile(userId, {
 
   const profileId = uuidv4();
 
-
-  const activeConnection = await connection;
-  const db = activeConnection.db(dbName);
-  const collection = await db.createCollection(profileCollectionName);
-  await collection.insertOne({
+  await initialized;
+  await profileCollection.insertOne({
     profileId,
+    userId,
     profileName,
     superannuationPercentage,
     incomeAmount,
@@ -44,26 +56,20 @@ async function createProfile(userId, {
   return profileId;
 }
 
-function deleteProfile(userId, profileId) {
-  const profiles = getProfilesByUser(userId);
-  const filteredProfiles = profiles.filter(profile => profile.profileId !== profileId);
-  profileStore.set(String(userId), filteredProfiles);
-
-  if (filteredProfiles.length == profiles.length) {
-    return false;
-  }
+async function deleteProfile(userId, profileId) {
+  await profileCollection.deleteOne({
+    profileId,
+  });
   return true;
 }
 
-function getProfilesByUser(userId) {
-  return profileStore.get(String(userId)) || [];
+async function getProfilesByUser(userId) {
+  return await profileCollection.find({ userId })
+    .toArray();
 }
 
 async function getProfileById(userId, profileId) {
-  const activeConnection = await connection;
-  const db = activeConnection.db(dbName);
-  const collection = await db.createCollection(profileCollectionName);
-  const profile = await collection.findOne({
+  const profile = await profileCollection.findOne({
     profileId
   });
 

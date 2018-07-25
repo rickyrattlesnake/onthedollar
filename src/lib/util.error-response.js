@@ -7,5 +7,10 @@ module.exports = {
   getNotFound: msg => ({
     statusCode: 404,
     message: msg || 'not found',
+  }),
+
+  getInternalServerError: msg => ({
+    statusCod: 500,
+    message: msg || 'internal server error'
   })
 };
