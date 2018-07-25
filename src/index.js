@@ -170,6 +170,14 @@ app.delete('/profiles/income/:id', async (req, res) => {
   return res.status(200).send({});
 });
 
+app.get('/profiles/income/:id/detail', async (req, res) => {
+  const userId = '123';
+
+  const profileId = req.params.id;
+
+  return res.status(200).send({});
+});
+
 app.listen(PORT, () => {
   console.log(`[v] connected on port ${PORT}`);
 });

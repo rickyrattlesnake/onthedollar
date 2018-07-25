@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const ratesApi = require('../rates-api');
 
-const { calculateTax } = require('../calculator');
+const { calculateTax, processIncome } = require('../calculator');
 
 describe('calculator', () => {
 
@@ -66,5 +66,35 @@ describe('calculator', () => {
 
     taxAmount = await calculateTax(87001, 2018);
     expect(taxAmount).to.equal(19822.37);
+  });
+
+  it('should process income with super included, low income bracket', async () => {
+    let processedIncome = await processIncome({
+      income: 12000,
+      includesSuper: true,
+      superPercentage: 9.5,
+      fiscalYear: 2018
+    });
+
+    expect(processedIncome.grossIncome).to.equal(10958.90410958904);
+    expect(processedIncome.taxableIncome).to.equal(10958.90410958904);
+    expect(processedIncome.taxAmount).to.equal(0);
+    expect(processedIncome.superAmount).to.equal(1041.0958904109589);
+    expect(processedIncome.netIncome).to.equal(10958.90410958904);
+  });
+
+  it('should process income without super included, high income bracket', async () => {
+    let processedIncome = await processIncome({
+      income: 192500,
+      includesSuper: false,
+      superPercentage: 11.5,
+      fiscalYear: 2018
+    });
+
+    expect(processedIncome.grossIncome).to.equal(192500);
+    expect(processedIncome.taxableIncome).to.equal(192500);
+    expect(processedIncome.taxAmount).to.equal(59857);
+    expect(processedIncome.superAmount).to.equal(22137.5);
+    expect(processedIncome.netIncome).to.equal(132643);
   });
 });

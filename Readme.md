@@ -65,3 +65,8 @@ Todo
 []
 [] add swagger api
 [] mongodb error handling
+
+
+Assumptions :
+- assume tax rates for fiscal years before 2017 is the same as 2017
+- ignores superannuation limit for low income
