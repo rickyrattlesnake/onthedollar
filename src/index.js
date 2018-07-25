@@ -4,6 +4,7 @@ const errorResponse = require('./lib/util.error-response');
 const stdHeaders = require('./lib/util.std-headers');
 const profileStore = require('./income-profile/accessor');
 const profileValidator = require('./income-profile/validator');
+const { processIncome } = require('./tax-calculator/calculator');
 
 const PORT = process.env.PORT || 3000;
 
@@ -73,18 +74,18 @@ app.post('/profiles/income', async (req, res) => {
 
   const {
     profileName,
-    superannuationPercentage,
+    superPercentage,
     incomeAmount,
     incomeIncludesSuper,
-    taxRatesYear
+    fiscalYear
   } = req.body;
 
   const validation = profileValidator.validate({
     profileName,
-    superannuationPercentage,
+    superannuationPercentage: superPercentage,
     incomeAmount,
     incomeIncludesSuper,
-    taxRatesYear
+    taxRatesYear: fiscalYear
   });
 
   if (validation.valid === false) {
@@ -94,19 +95,36 @@ app.post('/profiles/income', async (req, res) => {
       .send(error);
   }
 
-  const profileId = await profileStore.createProfile({
-    userId,
-    profileName,
-    superannuationPercentage,
+  const rawProfileData = {
+    superPercentage,
     incomeAmount,
     incomeIncludesSuper,
-    taxRatesYear
-  })
+    fiscalYear
+  };
 
-  return res.status(200)
-    .send({
-      profileId
+  try {
+    const processedProfileData = await processIncome({
+      income: incomeAmount,
+      includesSuper: incomeIncludesSuper,
+      superPercentage,
+      fiscalYear,
     });
+
+    const profileId = await profileStore.createProfile({
+      userId,
+      profileName,
+      rawProfileData,
+      processedProfileData,
+    });
+
+    return res.status(200)
+      .send({
+        profileId
+      });
+  } catch (error) {
+    const apiError = errorResponse.getInternalServerError();
+    return res.status(apiError.statusCode).send(apiError);
+  }
 });
 
 app.get('/profiles/income/:id', async (req, res) => {
@@ -125,10 +143,11 @@ app.get('/profiles/income/:id', async (req, res) => {
   return res.status(200)
     .send({
       profileName: profile.profileName,
-      superannuationPercentage: profile.superannuationPercentage,
-      incomeAmount: profile.incomeAmount,
-      incomeIncludesSuper: profile.incomeIncludesSuper,
-      taxRatesYear: profile.taxRatesYear
+      superAmount: profile.processedProfileData.superAmount,
+      grossIncome: profile.processedProfileData.grossIncome,
+      taxAmount: profile.processedProfileData.taxAmount,
+      netIncome: profile.processedProfileData.netIncome,
+      fiscalYear: profile.rawProfileData.fiscalYear,
     });
 });
 
@@ -162,20 +181,16 @@ app.delete('/profiles/income/:id', async (req, res) => {
 
   try {
     await profileStore.deleteProfile(userId, profileId);
+    return res.status(200).send({});
   } catch (error) {
     const apiError = errorResponse.getInternalServerError();
     return res.status(apiError.statusCode).send(apiError);
   }
 
-  return res.status(200).send({});
 });
 
 app.get('/profiles/income/:id/detail', async (req, res) => {
-  const userId = '123';
-
-  const profileId = req.params.id;
-
-  return res.status(200).send({});
+  return res.status(501).send({});
 });
 
 app.listen(PORT, () => {

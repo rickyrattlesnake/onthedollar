@@ -8,7 +8,7 @@ module.exports = {
 /**
  *
  * @param { number } taxableIncome
- * @param { num ber } fiscalYear
+ * @param { number } fiscalYear
  */
 async function calculateTax(taxableIncome, fiscalYear) {
   const rates = await ratesApi.fetchRates(fiscalYear);

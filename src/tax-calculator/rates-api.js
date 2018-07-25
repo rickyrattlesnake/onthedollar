@@ -47,5 +47,5 @@ async function fetchRates(fiscalYear) {
 
   const ratesSpecForYear = ratesSpec.filter(spec => spec.fiscalYear === fiscalYear)[0];
 
-  return (ratesSpecForYear == null) ? defaultRatesSpec : ratesSpecForYear;
+  return (ratesSpecForYear == null) ? defaultRatesSpec : ratesSpecForYear.rates;
 }

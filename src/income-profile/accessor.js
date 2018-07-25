@@ -34,10 +34,8 @@ module.exports = {
 async function createProfile({
       userId,
       profileName,
-      superannuationPercentage,
-      incomeAmount,
-      incomeIncludesSuper,
-      taxRatesYear,
+      rawProfileData,
+      processedProfileData,
     }) {
 
   const profileId = uuidv4();
@@ -47,10 +45,8 @@ async function createProfile({
     profileId,
     userId,
     profileName,
-    superannuationPercentage,
-    incomeAmount,
-    incomeIncludesSuper,
-    taxRatesYear
+    rawProfileData,
+    processedProfileData
   });
 
   return profileId;
