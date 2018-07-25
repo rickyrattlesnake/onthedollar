@@ -9,6 +9,17 @@
       "request": "launch",
       "name": "Launch Program",
       "program": "${file}"
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Mocha",
+      "program": "${workspaceRoot}/node_modules/.bin/mocha",
+      "args": [
+        "${file}",
+        "--timeout",
+        "9999"
+      ]
+    },
   ]
 }

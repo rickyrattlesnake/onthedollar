@@ -1,0 +1,54 @@
+- fiscalYear: 2019
+  description: Tax year 2018-2019
+  rates:
+    - bracket: [0, 18200]
+      rate: 0.00
+      minTaxAmount: 0
+    - bracket: [18201, 37000]
+      rate: 0.19
+      minTaxAmount: 0
+    - bracket: [37001, 90000]
+      rate: 0.325
+      minTaxAmount: 3572
+    - bracket: [90001, 180000]
+      rate: 0.37
+      minTaxAmount: 20797
+    - bracket: [180001, .inf]
+      rate: 0.45
+      minTaxAmount: 54097
+- fiscalYear: 2018
+  description: Tax year 2017-2018
+  rates:
+    - bracket: [0, 18200]
+      rate: 0.00
+      minTaxAmount: 0
+    - bracket: [18201, 37000]
+      rate: 0.19
+      minTaxAmount: 0
+    - bracket: [37001, 87000]
+      rate: 0.325
+      minTaxAmount: 3572
+    - bracket: [87001, 180000]
+      rate: 0.37
+      minTaxAmount: 19822
+    - bracket: [180001, .inf]
+      rate: 0.45
+      minTaxAmount: 54232
+- fiscalYear: 2017
+  description: Tax year 2016-2017
+  rates:
+    - bracket: [0, 18200]
+      rate: 0.00
+      minTaxAmount: 0
+    - bracket: [18201, 37000]
+      rate: 0.19
+      minTaxAmount: 0
+    - bracket: [37001, 87000]
+      rate: 0.325
+      minTaxAmount: 3572
+    - bracket: [87001, 180000]
+      rate: 0.37
+      minTaxAmount: 19822
+    - bracket: [180001, .inf]
+      rate: 0.45
+      minTaxAmount: 54232
