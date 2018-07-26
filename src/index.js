@@ -189,10 +189,6 @@ app.delete('/profiles/income/:id', async (req, res) => {
 
 });
 
-app.get('/profiles/income/:id/detail', async (req, res) => {
-  return res.status(501).send({});
-});
-
 app.listen(PORT, () => {
   console.log(`[v] connected on port ${PORT}`);
 });
