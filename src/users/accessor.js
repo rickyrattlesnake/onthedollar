@@ -1,5 +1,6 @@
 const db = require('../lib/util.mongodb');
 const bcrypt = require('bcrypt');
+const uuidv4 = require('uuid/v4');
 
 const SALT_ROUNDS = 10;
 
@@ -7,6 +8,7 @@ module.exports = {
   userExists,
   userCredentialsValid,
   createUser,
+  getUser,
 };
 
 async function userExists(username) {
@@ -19,8 +21,10 @@ async function createUser({ username, password }) {
     throw new Error('user exists');
   }
 
+  const userId = uuidv4();
+
   const pwdHash = await bcrypt.hash(password, SALT_ROUNDS);
-  await putUser({ username, pwdHash });
+  await putUser({ userId, username, pwdHash });
   return true;
 }
 
@@ -38,7 +42,7 @@ async function userCredentialsValid({ username, password }) {
 /**
  *
  * @param {{ username: string }}
- * @returns {{ username: string, pwdHash: string } | void }
+ * @returns { Promise<{ userId: string, username: string, pwdHash: string } | null> }
  */
 async function getUser({ username }) {
   const userCollection = await db.getUsersCollection();
@@ -49,6 +53,7 @@ async function getUser({ username }) {
   }
 
   return {
+    userId: user.userId,
     username: user.username,
     pwdHash: user.pwdHash,
   }
@@ -59,9 +64,9 @@ async function getUser({ username }) {
  *
  * @param {{ username: string, pwdHash: string }}
  */
-async function putUser({ username, pwdHash }) {
+async function putUser({ userId, username, pwdHash }) {
   const userCollection = await db.getUsersCollection();
-  await userCollection.insertOne({ username, pwdHash });
+  await userCollection.insertOne({ userId, username, pwdHash });
 
   return true;
 }

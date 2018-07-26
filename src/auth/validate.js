@@ -11,6 +11,7 @@ const EXPIRATION_SECONDS = 10 * 60;
 module.exports = {
   generateSessionToken,
   verifyToken,
+  extractAuthInformation,
 }
 
 async function generateSessionToken({ userId }) {
@@ -45,4 +46,27 @@ async function verifyToken(token) {
       return resolve(payload);
     })
   });
+}
+
+/**
+ *
+ * @param { string } authorizationHeader e.g. 'Bearer abc'
+ * @returns { { userId: string } | null } null implies authentication error
+ */
+async function extractAuthInformation(authorizationHeader) {
+  const credsRx = /^Bearer (.+)$/;
+
+  if (credsRx.test(authorizationHeader)) {
+    const token = credsRx.exec(authorizationHeader)[1];
+    try {
+      const payload = await verifyToken(token);
+      return {
+        userId: payload.userId,
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  return null;
 }

@@ -5,15 +5,13 @@ const stdHeaders = require('./lib/util.std-headers');
 const profileStore = require('./income-profile/accessor');
 const profileValidator = require('./income-profile/validator');
 const { processIncome } = require('./tax-calculator/calculator');
+const { createUser, userCredentialsValid, getUser } = require('./users/accessor');
+const { validate: validateUserInfo } = require('./users/validator');
+const { extractAuthInformation, generateSessionToken } = require('./auth/validate');
 
 const PORT = process.env.PORT || 3000;
 
 console.log('[-] environment :: PORT=', PORT);
-
-const {
-  generateSessionToken,
-  isValidUser,
-} = require('./authentication/authenticate');
 
 const {
   cors,
@@ -36,41 +34,65 @@ app.use(cors);
 app.use(express.json());
 
 
-app.get('/auth/token', (req, res) => {
-  const authHeader = req.get('authorization');
-  const credsRx = /^Basic (.+)$/;
-
-  let username, password;
-  if (credsRx.test(authHeader)) {
-    const encodedCreds = credsRx.exec(authHeader)[1];
-    [username, password] = Buffer.from(encodedCreds, 'base64').toString().split(':');
-  }
+app.post('/auth/session', async (req, res) => {
+  const { username, password } = req.body;
 
   if (username == null || username === '' || password == null || password === '') {
     const error = errorResponse.getBadRequest('username and password must be provided');
-
     return res.status(error.statusCode)
       .send(error);
   }
 
-  if (!isValidUser(username, password)) {
-    const error = errorResponse.getBadRequest('invalid username or password');
-
+  if (! await userCredentialsValid({ username, password})) {
+    const error = errorResponse.getUnauthorizedError();
     return res.status(error.statusCode)
       .send(error);
   }
 
-  const token = generateSessionToken();
-
+  const { userId } = await getUser({ username });
+  const token = await generateSessionToken({ userId });
   return res.status(200)
     .send({
       token,
     });
 });
 
+app.post('/users', async (req, res) => {
+  const { username, password } = req.body;
+
+  const validation = validateUserInfo({ username, password });
+  if (!validation.valid) {
+    const error = errorResponse.getBadRequest(validation.message);
+    return res.status(error.statusCode)
+      .send(error);
+  }
+
+  try {
+    await createUser({ username, password});
+  } catch (error) {
+    if (error.message == 'user exists') {
+      const parsedError = errorResponse.getBadRequest(error.message);
+      return res.status(parsedError.statusCode)
+        .send(parsedError);
+    }
+    throw error;
+  }
+
+  return res.status(200)
+    .send({});
+});
+
 
 app.post('/profiles/income', async (req, res) => {
-  const userId = '123';
+  const authInfo = extractAuthInformation(req.get('authorization'));
+
+  if (authInfo == null) {
+    const error = errorResponse.getUnauthorizedError();
+    return res.status(error.statusCode)
+      .send(error);
+  }
+
+  const userId = authInfo.userId;
 
   const {
     profileName,

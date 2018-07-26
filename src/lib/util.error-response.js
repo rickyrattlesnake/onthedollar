@@ -10,7 +10,12 @@ module.exports = {
   }),
 
   getInternalServerError: msg => ({
-    statusCod: 500,
+    statusCode: 500,
     message: msg || 'internal server error'
-  })
+  }),
+
+  getUnauthorizedError: msg => ({
+    statusCode: 401,
+    message: msg || 'unauthorized'
+  }),
 };

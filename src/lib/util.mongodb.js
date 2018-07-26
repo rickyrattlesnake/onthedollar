@@ -20,7 +20,7 @@ const initialized = (async function() {
     profilesCollection = await client.db(dbName).createCollection(profileCollectionName);
     usersCollection = await client.db(dbName).createCollection(userCollectionName);
 
-    await usersCollection.createIndex({ userId: 1}, { unique: true });
+    await usersCollection.createIndex({ username: 1}, { unique: true });
     await profilesCollection.createIndex({ profileId: 1}, { unique: true });
 
     console.log('[v] accessor.js :: connection success');
