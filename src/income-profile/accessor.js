@@ -1,28 +1,5 @@
 const uuidv4 = require('uuid/v4');
-const MongoClient = require('mongodb').MongoClient;
-const MongoLogger = require('mongodb').Logger;
-MongoLogger.setLevel('info');
-
-const mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const dbName = 'taxTracker';
-const profileCollectionName = 'profiles';
-
-let profileCollection;
-const initialized = (async function() {
-
-  const connectionUrl = `${mongodbUri}/${dbName}`;
-  console.log('[-] accessor.js :: connectionUrl =', connectionUrl);
-
-  let client;
-  try {
-    client = await MongoClient.connect(connectionUrl, { useNewUrlParser: true });
-    profileCollection = await client.db(dbName).createCollection(profileCollectionName);
-    console.log('[v] accessor.js :: connection success');
-  } catch (err) {
-    console.error(err);
-  }
-})();
-
+const { getProfilesCollection } = require('../lib/util.mongodb');
 
 module.exports = {
   createProfile,
@@ -40,8 +17,8 @@ async function createProfile({
 
   const profileId = uuidv4();
 
-  await initialized;
-  await profileCollection.insertOne({
+  const profilesCollection = await getProfilesCollection();
+  await profilesCollection.insertOne({
     profileId,
     userId,
     profileName,
@@ -53,19 +30,22 @@ async function createProfile({
 }
 
 async function deleteProfile(userId, profileId) {
-  await profileCollection.deleteOne({
+  const profilesCollection = await getProfilesCollection();
+  await profilesCollection.deleteOne({
     profileId,
   });
   return true;
 }
 
 async function getProfilesByUser(userId) {
-  return await profileCollection.find({ userId })
+  const profilesCollection = await getProfilesCollection();
+  return await profilesCollection.find({ userId })
     .toArray();
 }
 
 async function getProfileById(userId, profileId) {
-  const profile = await profileCollection.findOne({
+  const profilesCollection = await getProfilesCollection();
+  const profile = await profilesCollection.findOne({
     profileId
   });
 

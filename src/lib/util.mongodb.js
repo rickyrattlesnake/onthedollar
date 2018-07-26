@@ -1,4 +1,3 @@
-const uuidv4 = require('uuid/v4');
 const MongoClient = require('mongodb').MongoClient;
 const MongoLogger = require('mongodb').Logger;
 MongoLogger.setLevel('info');
@@ -17,11 +16,32 @@ const initialized = (async function() {
   let client;
   try {
     client = await MongoClient.connect(connectionUrl, { useNewUrlParser: true });
-    profilesCollection = await client.db(dbName).createCollection(profileCollectionName);
-    usersCollection = await client.db(dbName).createCollection(userCollectionName);
 
-    await usersCollection.createIndex({ username: 1}, { unique: true });
-    await profilesCollection.createIndex({ profileId: 1}, { unique: true });
+
+    try {
+      profilesCollection = await client.db(dbName).createCollection(profileCollectionName);
+      await profilesCollection.createIndex({ profileId: 1}, { unique: true });
+    } catch (error) {
+      if (error.name === 'MongoError' &&
+          error.codeName === 'NamespaceExists') {
+        console.log(`[~] accessor.js :: collection ${profileCollectionName} already exists`);
+      } else {
+        throw error;
+      }
+    }
+
+    try {
+      usersCollection = await client.db(dbName).createCollection(userCollectionName);
+      await usersCollection.createIndex({ username: 1}, { unique: true });
+    } catch (error) {
+      if (error.name === 'MongoError' &&
+      error.codeName === 'NamespaceExists') {
+        console.log(`[~] accessor.js :: collection ${userCollectionName} already exists`);
+      } else {
+        throw error;
+      }
+    }
+
 
     console.log('[v] accessor.js :: connection success');
   } catch (err) {
@@ -30,7 +50,7 @@ const initialized = (async function() {
 })();
 
 module.exports = {
-  getProfilesCollecion: async () => {
+  getProfilesCollection: async () => {
     await initialized;
     return profilesCollection;
 
