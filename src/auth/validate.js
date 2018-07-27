@@ -6,7 +6,7 @@ const privateKeyCert = fs.readFileSync(path.join(__dirname, 'keys', 'privatekey.
 const publicKeyCert = fs.readFileSync(path.join(__dirname, 'keys', 'publickey.crt'));
 const passphrase = process.env.PK_PASSPHRASE;
 
-const EXPIRATION_SECONDS = 10 * 60;
+const EXPIRATION_SECONDS = 60 * 60;
 
 module.exports = {
   generateSessionToken,
@@ -64,7 +64,11 @@ async function extractAuthInformation(authorizationHeader) {
         userId: payload.userId,
       };
     } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        console.log('[-] validate.js :: expired token');
+      }
       return null;
+
     }
   }
 

@@ -6,8 +6,8 @@ const { extractAuthInformation } = require('../auth/validate');
 const errorResponse = require('../lib/util.error-response');
 
 
-router.use(function (req, res, next) {
-  const authInfo = extractAuthInformation(req.get('authorization'));
+router.use(async (req, res, next) => {
+  const authInfo = await extractAuthInformation(req.get('authorization'));
 
   if (authInfo == null) {
     const error = errorResponse.getUnauthorizedError();

@@ -46,7 +46,8 @@ async function getProfilesByUser(userId) {
 async function getProfileById(userId, profileId) {
   const profilesCollection = await getProfilesCollection();
   const profile = await profilesCollection.findOne({
-    profileId
+    profileId,
+    userId,
   });
 
   return profile == null ? null : profile;
