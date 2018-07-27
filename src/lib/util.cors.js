@@ -1,6 +1,7 @@
 const allowedComplexHeaders = [
   'Content-Type',
   'Accept',
+  'Authorization',
 ];
 
 const allowesComplexMethods = [

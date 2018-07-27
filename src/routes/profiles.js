@@ -7,6 +7,10 @@ const errorResponse = require('../lib/util.error-response');
 
 
 router.use(async (req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
   const authInfo = await extractAuthInformation(req.get('authorization'));
 
   if (authInfo == null) {
@@ -92,6 +96,7 @@ router.get('/income/:id', async (req, res) => {
 
   return res.status(200)
     .send({
+      profileId: profile.profileId,
       profileName: profile.profileName,
       superAmount: profile.processedProfileData.superAmount,
       grossIncome: profile.processedProfileData.grossIncome,
@@ -107,6 +112,7 @@ router.get('/income', async (req, res) => {
   const profiles = await profileStore.getProfilesByUser(userId);
 
   const trimmedProfiles = profiles.map(profile => ({
+    profileId: profile.profileId,
     profileName: profile.profileName,
     superAmount: profile.processedProfileData.superAmount,
     grossIncome: profile.processedProfileData.grossIncome,
