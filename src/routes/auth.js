@@ -18,12 +18,20 @@ router.post('/session', async (req, res) => {
       .send(error);
   }
 
-  const { userId } = await getUser({ username });
-  const token = await generateSessionToken({ userId });
-  return res.status(200)
-    .send({
-      token,
-    });
+  try {
+    const { userId } = await getUser({ username });
+    const token = await generateSessionToken({ userId });
+    return res.status(200)
+      .send({
+        token,
+      });
+  } catch (error) {
+    console.error(error);
+    const err = errorResponse.getInternalServerError();
+    return res.status(err.statusCode)
+      .send(err);
+  }
+
 });
 
 module.exports = router;
