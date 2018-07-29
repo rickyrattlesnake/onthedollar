@@ -12,26 +12,23 @@
   - gross or gross + super amount
   -
 - user can view profiles:
-  - superannuation amount
-  - gross amount (if gross + super entered)
-  - gross + super (if gross entered)
-  - tax amount
-  - net amount
-  - net + super amount
+  [-] superannuation amount
+  [-] gross amount (if gross + super entered)
+  [-] gross + super (if gross entered)
+  [-] tax amount
+  [-] net amount
+  [-] net + super amount
 - users can
   - list and delete a history of calculations
   - calculations have their related tax rates
 - latest tax rates should be fetched from "external server"
   - emulate with a json file
 
-Todo
-[] cors
-[] https ?
-[] header - HMAC hash
-[] add swagger api
-[] mongodb error handling
+## Todo
+[-] add cors
+[x] add swagger api
 
 
-Assumptions :
+## Assumptions :
 - assume tax rates for fiscal years before 2017 is the same as 2017
 - ignores superannuation limit for low income

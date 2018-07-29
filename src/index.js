@@ -7,11 +7,13 @@ const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
 
 const PORT = process.env.PORT || 3000;
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'http://localhost:4200';
 
 console.log('[-] environment :: PORT=', PORT);
+console.log('[-] environment :: ALLOWED_ORIGIN=', ALLOWED_ORIGIN);
 
 const {
-  cors,
+  createCorsHandler,
 } = require('./lib/util.cors');
 
 const app = express();
@@ -25,7 +27,7 @@ app.use((req, res, next) => {
 });
 
 // cors
-app.use(cors);
+app.use(createCorsHandler({ allowedOrigin: ALLOWED_ORIGIN }));
 
 // parser middleware
 app.use(express.json());
